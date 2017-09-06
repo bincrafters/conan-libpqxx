@@ -1,2 +1,4 @@
+
 # conan-libpqxx
-Conan package for libpqxx (https://github.com/jtv/libpqxx)
+
+[Conan.io](https://conan.io) package for libpqxx

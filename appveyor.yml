@@ -1,0 +1,25 @@
+build: false
+environment:
+    PYTHON: "C:\\Python27-x64"
+    PYTHON_VERSION: "2.7.11"
+    PYTHON_ARCH: "64"
+
+    CONAN_REFERENCE: "libpqxx/5.0.1"
+    CONAN_USERNAME: "jgsogo"
+    CONAN_CHANNEL: "stable"
+    CONAN_TOTAL_PAGES: 4
+    CONAN_REMOTES: "https://api.bintray.com/conan/jgsogo/conan-packages"
+    CONAN_UPLOAD: "https://api.bintray.com/conan/jgsogo/conan-packages"
+
+    matrix:
+        - CONAN_CURRENT_PAGE: 1
+        - CONAN_CURRENT_PAGE: 2
+        - CONAN_CURRENT_PAGE: 3
+        - CONAN_CURRENT_PAGE: 4
+install:
+  - set PATH=%PATH%;%PYTHON%/Scripts/
+  - C:/Python27-x64/Scripts/pip.exe install conan_package_tools 
+  - conan user
+
+test_script:
+  - C:\Python27-x64\python build.py
