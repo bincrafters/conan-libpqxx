@@ -13,7 +13,6 @@ env:
     - CONAN_CURRENT_PAGE=1
     - CONAN_REMOTES="https://api.bintray.com/conan/jgsogo/conan-packages"
     - CONAN_UPLOAD="https://api.bintray.com/conan/jgsogo/conan-packages"
-    # Configure database in travis https://docs.travis-ci.com/user/database-setup/#PostgreSQL
     - PGDATABASE="travis_ci_test"
     - PGUSER="postgresi"
     - PGPASSWORD=""
