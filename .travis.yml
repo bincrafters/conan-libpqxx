@@ -13,9 +13,6 @@ env:
     - CONAN_CURRENT_PAGE=1
     - CONAN_REMOTES="https://api.bintray.com/conan/jgsogo/conan-packages"
     - CONAN_UPLOAD="https://api.bintray.com/conan/jgsogo/conan-packages"
-    - PGDATABASE="travis_ci_test"
-    - PGUSER="postgresi"
-    - PGPASSWORD=""
 
   matrix:
     - CONAN_GCC_VERSIONS=4.8 CONAN_USE_DOCKER=1
@@ -43,6 +40,9 @@ install:
 
 before_script:
   - psql -c 'create database travis_ci_test;' -U postgres
+  - export PGDATABASE="travis_ci_test"
+  - export PGUSER="postgresi"
+  - export PGPASSWORD=""
 
 script:
   - ./.travis/run.sh
