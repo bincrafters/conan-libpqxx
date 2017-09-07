@@ -1,6 +1,7 @@
 os: linux
 services:
    - docker
+   - postgresql
 sudo: required
 language: python
 env:
@@ -36,5 +37,10 @@ matrix:
 
 install:
   - ./.travis/install.sh
+
+before_script:
+  - psql -c 'create database travis_ci_test;' -U postgres
+
 script:
   - ./.travis/run.sh
+
