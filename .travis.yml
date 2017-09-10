@@ -48,6 +48,6 @@ script:
   - export PGUSER="postgres"
   - export PGPASSWORD=""
   - export PGHOSTADDR="$(/sbin/ip route|awk '/default/ { print $3 }')"
-  - echo "listen_addresses = '*'" >> /etc/postgresql/9.4/main/postgresql.conf
+  - sudo echo "listen_addresses = '*'" >> /etc/postgresql/9.4/main/postgresql.conf
   - sudo /etc/init.d/postgresql restart
   - ./.travis/run.sh
