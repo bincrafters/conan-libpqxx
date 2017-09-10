@@ -48,7 +48,5 @@ script:
   - export PGUSER="postgres"
   - export PGPASSWORD=""
   - export PGHOSTADDR="$(/sbin/ip route|awk '/default/ { print $3 }')"
-  - sudo echo "listen_addresses = '*'" >> /etc/postgresql/9.4/main/postgresql.conf
-  - sudo echo "host all all 0.0.0.0/0 trust" >> /etc/postgresql/9.4/main/pg_hba.conf
-  - sudo /etc/init.d/postgresql restart
+  - socat TCP-LISTEN:1234,reuseaddr,fork UNIX-CLIENT:/var/run/postgresql/.s.PGSQL.5432
   - ./.travis/run.sh
