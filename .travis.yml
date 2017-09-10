@@ -2,8 +2,6 @@ os: linux
 services:
    - docker
 sudo: required
-addons:
-  postgresql: "9.4"
 language: python
 env:
   global:
@@ -16,7 +14,7 @@ env:
     - CONAN_UPLOAD="https://api.bintray.com/conan/jgsogo/conan-packages"
 
   matrix:
-    - CONAN_GCC_VERSIONS=4.8
+    - CONAN_GCC_VERSIONS=4.8 CONAN_USE_DOCKER=1
     - CONAN_GCC_VERSIONS=4.9 CONAN_USE_DOCKER=1
     - CONAN_GCC_VERSIONS=5.2 CONAN_USE_DOCKER=1
     - CONAN_GCC_VERSIONS=5.3 CONAN_USE_DOCKER=1
@@ -39,15 +37,5 @@ matrix:
 install:
   - ./.travis/install.sh
 
-before_script:
-  - psql -c 'create database travis_ci_test;' -U postgres
-  - psql -c "\conninfo" -U postgres
-
 script:
-  - export PGDATABASE="travis_ci_test"
-  - export PGUSER="postgres"
-  - export PGPASSWORD=""
-  - export PGHOSTADDR="$(/sbin/ip route|awk '/default/ { print $3 }')"
-  - export PGPORT=5432
-  - source socat -d -d TCP-LISTEN:5432,reuseaddr,fork UNIX-CLIENT:/var/run/postgresql/.s.PGSQL.5432 &
   - ./.travis/run.sh
