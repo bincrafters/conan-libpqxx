@@ -4,6 +4,9 @@
 
 int main()
 {
+    std::cout << "Environment:" << std::endl;
+    std::cout << " - PGDATABASE=" << std::getenv("PGDATABASE") << std::endl;
+    std::cout << " - PGUSER=" << std::getenv("PGUSER") << std::endl;
     try
     {
         pqxx::connection C;
