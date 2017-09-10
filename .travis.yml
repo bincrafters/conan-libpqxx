@@ -49,5 +49,5 @@ script:
   - export PGPASSWORD=""
   - export PGHOSTADDR="$(/sbin/ip route|awk '/default/ { print $3 }')"
   - export PGPORT=5432
-  - socat -d -d TCP-LISTEN:5432,reuseaddr,fork UNIX-CLIENT:/var/run/postgresql/.s.PGSQL.5432 &
+  - source socat -d -d TCP-LISTEN:5432,reuseaddr,fork UNIX-CLIENT:/var/run/postgresql/.s.PGSQL.5432 &
   - ./.travis/run.sh
