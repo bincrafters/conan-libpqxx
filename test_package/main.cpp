@@ -14,13 +14,13 @@ int main()
         pqxx::work W(C);
 
         // Create table and populate
-        W.exec("CREATE TABLE employee (name varchar (50) NOT NULL, salary decimal NOT NULL);");
+        W.exec("CREATE TABLE IF NOT EXISTS employee (name varchar (50) NOT NULL, salary decimal NOT NULL);");
         W.exec("INSERT INTO employee (name, salary) values ('jgsogo', 1000);");
 
         // Read and double
         pqxx::result R = W.exec("SELECT name FROM employee");
 
-        std::cout << "Found " << R.size() << "employees:" << std::endl;
+        std::cout << "Found " << R.size() << " employees:" << std::endl;
         for (auto row: R)
             std::cout << row[0].c_str() << std::endl;
 
