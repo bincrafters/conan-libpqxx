@@ -5,6 +5,7 @@
 int main()
 {
     std::cout << "Environment:" << std::endl;
+    std::cout << " - PGHOSTADDR=" << std::getenv("PGHOSTADDR") << std::endl;
     std::cout << " - PGDATABASE=" << std::getenv("PGDATABASE") << std::endl;
     std::cout << " - PGUSER=" << std::getenv("PGUSER") << std::endl;
     try

@@ -1,8 +1,9 @@
 os: linux
 services:
    - docker
-   - postgresql
 sudo: required
+addons:
+  postgresql: "9.4"
 language: python
 env:
   global:
@@ -47,5 +48,6 @@ script:
   - export PGUSER="postgres"
   - export PGPASSWORD=""
   - export PGHOSTADDR="$(/sbin/ip route|awk '/default/ { print $3 }')"
+  - echo "listen_addresses = '*'" >> /etc/postgresql/9.4/main/postgresql.conf
+  - /etc/init.d/postgresql restart
   - ./.travis/run.sh
-
