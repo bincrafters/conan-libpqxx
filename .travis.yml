@@ -15,11 +15,11 @@ env:
     - CONAN_UPLOAD="https://api.bintray.com/conan/jgsogo/conan-packages"
 
   matrix:
-    - CONAN_GCC_VERSIONS=4.8 # CONAN_USE_DOCKER=1  // We cannot use Docker because the database is being installed outside the container.
-    - CONAN_GCC_VERSIONS=4.9 # CONAN_USE_DOCKER=1
-    - CONAN_GCC_VERSIONS=5.2 # CONAN_USE_DOCKER=1
-    - CONAN_GCC_VERSIONS=5.3 # CONAN_USE_DOCKER=1
-    - CONAN_GCC_VERSIONS=6.3 # CONAN_USE_DOCKER=1
+    - CONAN_GCC_VERSIONS=4.8 CONAN_USE_DOCKER=1
+    - CONAN_GCC_VERSIONS=4.9 CONAN_USE_DOCKER=1
+    - CONAN_GCC_VERSIONS=5.2 CONAN_USE_DOCKER=1
+    - CONAN_GCC_VERSIONS=5.3 CONAN_USE_DOCKER=1
+    - CONAN_GCC_VERSIONS=6.3 CONAN_USE_DOCKER=1
 matrix:
    include:
        - os: osx
