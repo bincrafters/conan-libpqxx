@@ -13,6 +13,11 @@ int main()
         std::cout << "Connected to " << C.dbname() << std::endl;
         pqxx::work W(C);
 
+        // Create table and populate
+        W.exec("CREATE TABLE employee (name varchar (50) NOT NULL, salary decimal NOT NULL);");
+        W.exec("INSERT INTO employee (name, salary) values ('jgsogo', 1000);");
+
+        // Read and double
         pqxx::result R = W.exec("SELECT name FROM employee");
 
         std::cout << "Found " << R.size() << "employees:" << std::endl;
