@@ -43,7 +43,10 @@ class LibpqxxConan(ConanFile):
                 command = './configure {} && make'.format(options)
                 self.run("cd libpqxx-%s && %s" % (self.version, command))
         else:
-            raise NotImplementedError("Compilation of master branch not implemented")
+            env = AutoToolsBuildEnvironment(self)
+            with tools.environment_append(env.vars):
+                command = 'nmake /f win32/vc-libpqxx.mak'
+                self.run("cd libpqxx-%s && %s" % (self.version, command))
 
     def package(self):
         source_folder = "libpqxx-{}".format(self.version)
