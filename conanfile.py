@@ -97,11 +97,12 @@ class LibpqxxConan(ConanFile):
             shutil.copy('config-public-compiler.h', target_dir + "/")
 
         vcvars = tools.vcvars_command(self.settings)
+        self.run(vcvars)
         env = VisualStudioBuildEnvironment(self)
         with tools.environment_append(env.vars):
             with tools.chdir(self.source_dir):
                 target = "DLL" if self.options.shared else "STATIC"
                 target += str(self.settings.build_type).upper()
-                command = '%s && nmake /f win32/vc-libpqxx.mak %s' % (vcvars, target)
+                command = 'nmake /f win32/vc-libpqxx.mak %s' % target
                 self.output.info(command)
                 self.run(command)
