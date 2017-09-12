@@ -79,17 +79,17 @@ class LibpqxxConan(ConanFile):
         # Follow instructions in https://github.com/jtv/libpqxx/blob/master/win32/INSTALL.txt
         common_file = os.path.join(self.source_dir, 'win32', 'common')
         with open(common_file, "w") as f:
-            f.write('PGSQLSRC="{}"'.format(self.deps_cpp_info["postgresql"].rootpath))
-            f.write('PGSQLINC=$(PGSQLSRC)\include')
-            f.write('LIBPQINC=$(PGSQLSRC)\include')
+            f.write('PGSQLSRC="{}"\n'.format(self.deps_cpp_info["postgresql"].rootpath))
+            f.write('PGSQLINC=$(PGSQLSRC)\include\n')
+            f.write('LIBPQINC=$(PGSQLSRC)\include\n')
 
-            f.write('LIBPQPATH=$(PGSQLSRC)\lib')
-            f.write('LIBPQDLL=libpq.dll')
-            f.write('LIBPQLIB=libpq.lib')
+            f.write('LIBPQPATH=$(PGSQLSRC)\lib\n')
+            f.write('LIBPQDLL=libpq.dll\n')
+            f.write('LIBPQLIB=libpq.lib\n')
 
-            f.write('LIBPQDPATH=$(PGSQLSRC)\lib')
-            f.write('LIBPQDDLL=libpq.dll')
-            f.write('LIBPQDLIB=libpq.lib')
+            f.write('LIBPQDPATH=$(PGSQLSRC)\lib\n')
+            f.write('LIBPQDDLL=libpq.dll\n')
+            f.write('LIBPQDLIB=libpq.lib\n')
 
         target_dir = os.path.join(self.source_dir, 'include', 'pqxx')
         with tools.chdir(os.path.join(self.source_dir, 'config', 'sample-headers', 'compiler', 'VisualStudio2013', 'pqxx')):
