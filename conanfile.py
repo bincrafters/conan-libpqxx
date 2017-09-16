@@ -40,6 +40,7 @@ class LibpqxxConan(ConanFile):
 
     def build(self):
         if self.settings.os == "Linux" or self.settings.os == "Macos":
+            self.run("ls -la {}".format(self.deps_cpp_info["postgresql"].rootpath))
             options = "--with-postgres-include={}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "include"))
             options += " --with-postgres-lib={}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "lib"))
 
