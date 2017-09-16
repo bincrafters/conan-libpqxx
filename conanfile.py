@@ -48,10 +48,10 @@ class LibpqxxConan(ConanFile):
                 options += " --disable-documentation"
 
             env = AutoToolsBuildEnvironment(self)
+            env.vars["PATH"] = ':'.join(env.vars["PATH"], os.path.join(self.deps_cpp_info["postgresql"].rootpath, "bin"))
             with tools.environment_append(env.vars):
                 with tools.chdir(self.pq_source_dir):
                     self.output.info(options)
-                    self.run("export PATH=$PATH:{}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "bin")))
                     self.run("echo $PATH")
                     self.run("./configure {}".format(options))
                     self.run("make")
