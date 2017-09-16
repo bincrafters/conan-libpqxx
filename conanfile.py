@@ -42,7 +42,6 @@ class LibpqxxConan(ConanFile):
 
     def build(self):
         if self.settings.os == "Linux" or self.settings.os == "Macos":
-            self.run("ls -la {}/bin".format(self.deps_cpp_info["postgresql"].rootpath))
             options = "--with-postgres-include={}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "include"))
             options += " --with-postgres-lib={}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "lib"))
 
@@ -50,12 +49,11 @@ class LibpqxxConan(ConanFile):
                 options += " --disable-documentation"
 
             env = AutoToolsBuildEnvironment(self)
-            env.vars["PATH"] = ':'.join([env.vars.get("PATH", ""), os.path.join(self.deps_cpp_info["postgresql"].rootpath, "bin")])
             with tools.environment_append(env.vars):
                 with tools.chdir(self.pq_source_dir):
+                    add_path = "export PATH=$PATH:{}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "bin"))
                     self.output.info(options)
-                    self.run("echo $PATH")
-                    self.run("./configure {}".format(options))
+                    self.run("{} && ./configure {}".format(add_path, options))
                     self.run("make")
         else:
             self.windows_build()
