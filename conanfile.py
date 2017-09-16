@@ -51,6 +51,7 @@ class LibpqxxConan(ConanFile):
             with tools.environment_append(env.vars):
                 with tools.chdir(self.pq_source_dir):
                     self.output.info(options)
+                    self.run("export PATH=$PATH:{}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "bin")))
                     self.run("./configure {}".format(options))
                     self.run("make")
         else:
