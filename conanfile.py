@@ -12,7 +12,6 @@ class LibpqxxConan(ConanFile):
     url = "https://github.com/jgsogo/conan-libpqxx"
     license = "https://github.com/jtv/libpqxx/blob/master/COPYING"
 
-    build_requires = "postgresql/v9.6.5@jgsogo/stable"
     options = {"disable_documentation": [True, False],
                "shared": [True, False], }
     default_options = "disable_documentation=True", "shared=False"
@@ -20,6 +19,9 @@ class LibpqxxConan(ConanFile):
     @property
     def pq_source_dir(self):
         return os.path.abspath("libpqxx-%s" % self.version)
+
+    def requirements(self):
+        self.requires.add("postgresql/v9.6.5@jgsogo/stable")
 
     def system_requirements(self):
         if os_info.is_linux:
@@ -48,7 +50,7 @@ class LibpqxxConan(ConanFile):
                 options += " --disable-documentation"
 
             env = AutoToolsBuildEnvironment(self)
-            env.vars["PATH"] = ':'.join(env.vars.get("PATH", ""), os.path.join(self.deps_cpp_info["postgresql"].rootpath, "bin"))
+            env.vars["PATH"] = ':'.join([env.vars.get("PATH", ""), os.path.join(self.deps_cpp_info["postgresql"].rootpath, "bin")])
             with tools.environment_append(env.vars):
                 with tools.chdir(self.pq_source_dir):
                     self.output.info(options)
