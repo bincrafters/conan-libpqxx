@@ -1,27 +1,40 @@
-os: linux
-services:
-   - docker
-sudo: required
-language: python
 env:
-  global:
-    - CONAN_REFERENCE="libpqxx/5.0.1"
-    - CONAN_USERNAME="jgsogo"
-    - CONAN_CHANNEL="stable"
-    - CONAN_TOTAL_PAGES=1
-    - CONAN_CURRENT_PAGE=1
-    - CONAN_REMOTES="https://api.bintray.com/conan/jgsogo/conan-packages"
-    - CONAN_UPLOAD="https://api.bintray.com/conan/jgsogo/conan-packages"
+   global:
+     - CONAN_CHANNEL: "stable"
+     - CONAN_REMOTES: "https://api.bintray.com/conan/jgsogo/conan-packages"
+     - CONAN_UPLOAD: "https://api.bintray.com/conan/jgsogo/conan-packages"
 
-  matrix:
-    - CONAN_GCC_VERSIONS=4.8 CONAN_USE_DOCKER=1
-    - CONAN_GCC_VERSIONS=4.9 CONAN_USE_DOCKER=1
-    - CONAN_GCC_VERSIONS=5.2 CONAN_USE_DOCKER=1
-    - CONAN_GCC_VERSIONS=5.3 CONAN_USE_DOCKER=1
-    - CONAN_GCC_VERSIONS=6.3 CONAN_USE_DOCKER=1
+linux: &linux
+   os: linux
+   sudo: required
+   language: python
+   python: "3.6"
+   services:
+     - docker
+osx: &osx
+   os: osx
+   language: generic
+matrix:
+   include:
+      - <<: *linux
+        env: CONAN_GCC_VERSIONS=4.9 CONAN_DOCKER_IMAGE=lasote/conangcc49
+
+      - <<: *linux
+        env: CONAN_GCC_VERSIONS=5.4 CONAN_DOCKER_IMAGE=lasote/conangcc54
+
+      - <<: *linux
+        env: CONAN_GCC_VERSIONS=6.3 CONAN_DOCKER_IMAGE=lasote/conangcc63
+
+      - <<: *linux
+        env: CONAN_CLANG_VERSIONS=4.0 CONAN_DOCKER_IMAGE=lasote/conanclang40
+
+      - <<: *osx
+        osx_image: xcode8.3
+        env: CONAN_APPLE_CLANG_VERSIONS=8.1
 
 install:
+  - chmod +x ./.travis/install.sh
   - ./.travis/install.sh
-
 script:
+  - chmod +x ./.travis/run.sh
   - ./.travis/run.sh

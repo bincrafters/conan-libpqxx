@@ -4,7 +4,7 @@ from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools, VisualStu
 from conans.tools import os_info, SystemPackageTool, download, untargz, replace_in_file, unzip
 
 
-class LibpqxxConan(ConanFile):
+class ConanRecipe(ConanFile):
     name = "libpqxx"
     version = "5.0.1"
     settings = "os", "compiler", "build_type", "arch"
