@@ -1,7 +1,8 @@
+
 import os
 import shutil
-from conans import ConanFile, CMake, AutoToolsBuildEnvironment, tools, VisualStudioBuildEnvironment
-from conans.tools import os_info, SystemPackageTool, download, untargz, replace_in_file, unzip
+from conans import ConanFile, AutoToolsBuildEnvironment, tools, VisualStudioBuildEnvironment
+from conans.tools import os_info, SystemPackageTool, download, untargz
 
 
 class ConanRecipe(ConanFile):
