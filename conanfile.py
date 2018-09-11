@@ -85,10 +85,10 @@ class LibpqxxRecipe(ConanFile):
             f.write(b'LIBPQDDLL=libpq.dll\n')
             f.write(b'LIBPQDLIB=libpq.lib\n')
 
-        target_dir = os.path.join(self.source_subfolder, 'include', 'pqxx')
+        target_dir = os.path.abspath(os.path.join(self.source_subfolder, 'include', 'pqxx'))
         with tools.chdir(os.path.join(self.source_subfolder, 'config', 'sample-headers', 'compiler', 'VisualStudio2013', 'pqxx')):
-            shutil.copy('config-internal-compiler.h', target_dir + "/")
-            shutil.copy('config-public-compiler.h', target_dir + "/")
+            shutil.copy('config-internal-compiler.h', target_dir)
+            shutil.copy('config-public-compiler.h', target_dir)
 
         vcvars = tools.vcvars_command(self.settings)
         self.run(vcvars)
