@@ -47,3 +47,5 @@ class LibpqxxRecipe(ConanFile):
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
+        if self.settings.os == "Windows":
+            self.cpp_info.libs.append("Ws2_32")

@@ -35,6 +35,9 @@ target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/source_su
 target_include_directories(${PROJECT_NAME} PRIVATE "${CMAKE_BINARY_DIR}/include")
 target_link_libraries(${PROJECT_NAME} PUBLIC ${PostgreSQL_LIBRARIES})
 set_property(TARGET ${PROJECT_NAME} PROPERTY CXX_STANDARD 14)
+if (WIN32 AND MSVC AND BUILD_SHARED_LIBS)
+    set_target_properties(${CMAKE_PROJECT_NAME} PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
 
 install(TARGETS ${PROJECT_NAME}
         RUNTIME DESTINATION bin
