@@ -1,7 +1,7 @@
 #include <cstdlib>
 #include <iostream>
 
-#include <pqxx/pqxx>
+#include "pqxx/pqxx"
 
 int main()
 {

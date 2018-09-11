@@ -22,8 +22,9 @@ class LibpqxxRecipe(ConanFile):
     autotools = None
 
     def config_options(self):
-        if self.settings.os == "Windows":
+        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
             self.options.remove("fPIC")
+            self.options["libpq"].shared = True
 
     def source(self):
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))
@@ -40,12 +41,40 @@ class LibpqxxRecipe(ConanFile):
                 self.autotools.configure(args=args)
         return self.autotools
 
+    def windows_build(self):
+        # Follow instructions in https://github.com/jtv/libpqxx/blob/master/win32/INSTALL.txt
+        common_file = os.path.join(self.source_subfolder, 'win32', 'common')
+        with open(common_file, "w") as fd:
+            postgres_path = self.deps_cpp_info["libpq"].rootpath
+            fd.write(b'PGSQLSRC="{}"\n'.format(postgres_path))
+            fd.write(b'PGSQLINC="{}"\n'.format(os.path.join(postgres_path, "include")))
+            fd.write(b'LIBPQINC="{}"\n'.format(os.path.join(postgres_path, "include")))
+
+        target_dir = os.path.abspath(os.path.join(self.source_subfolder, 'include', 'pqxx'))
+        with tools.chdir(os.path.join(self.source_subfolder, 'config', 'sample-headers', 'compiler', 'VisualStudio2013', 'pqxx')):
+            shutil.copy('config-internal-compiler.h', target_dir)
+            shutil.copy('config-public-compiler.h', target_dir)
+            shutil.copy(os.path.join(self.deps_cpp_info["libpq"].bin_paths[0], "libpq.dll"), os.path.join(self.deps_cpp_info["libpq"].lib_paths[0]))
+
+        vcvars = tools.vcvars_command(self.settings)
+        self.run(vcvars)
+        env = VisualStudioBuildEnvironment(self)
+        with tools.environment_append(env.vars):
+            with tools.chdir(self.source_subfolder):
+                target = "DLL" if self.options.shared else "STATIC"
+                target += str(self.settings.build_type).upper()
+                command = 'nmake /f win32/vc-libpqxx.mak %s' % target
+                self.run(command)
+
+    def unix_build(self):
+        autotools = self.configure_autotools()
+        with tools.chdir(self.source_subfolder):
+            autotools.make()
+
     def build(self):
         if self.settings.os == "Linux" or self.settings.os == "Macos":
-            autotools = self.configure_autotools()
-            with tools.chdir(self.source_subfolder):
-                autotools.make()
-        elif self.settings.os == "Windows":
+            self.unix_build()
+        elif self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
             self.windows_build()
         else:
             raise Exception("Could not build: Platform {} is not supported.".format(self.settings.os))
@@ -56,47 +85,12 @@ class LibpqxxRecipe(ConanFile):
             autotools = self.configure_autotools()
             with tools.chdir(self.source_subfolder):
                 autotools.install()
-        elif self.settings.os == "Windows":
+        elif self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+            self.copy("*", dst="include", src=os.path.join(self.source_subfolder, "include"))
+            self.copy("*.h", dst="include", src=os.path.join(self.source_subfolder, "include"))
             self.copy("*.lib", dst="lib", src=os.path.join(self.source_subfolder, "lib"))
-            self.copy("*.bin", dst="bin", src=os.path.join(self.source_subfolder, "lib"))
+            self.copy("*.dll", dst="bin", src=os.path.join(self.source_subfolder, "lib"))
 
     def package_info(self):
         if self.settings.os == "Linux":
             self.cpp_info.libs = tools.collect_libs(self)
-        elif self.settings.os == "Windows":
-            base_name = "libpqxx"
-            if not self.options.shared:
-                base_name += "_static"
-            self.cpp_info.libs = [base_name, ]
-
-    def windows_build(self):
-        # Follow instructions in https://github.com/jtv/libpqxx/blob/master/win32/INSTALL.txt
-        common_file = os.path.join(self.source_subfolder, 'win32', 'common')
-        with open(common_file, "w") as f:
-            f.write(b'PGSQLSRC="{}"\n'.format(self.deps_cpp_info["libpq"].rootpath))
-            f.write(b'PGSQLINC=$(PGSQLSRC)\\include\n')
-            f.write(b'LIBPQINC=$(PGSQLSRC)\\include\n')
-
-            f.write(b'LIBPQPATH=$(PGSQLSRC)\\lib\n')
-            f.write(b'LIBPQDLL=libpq.dll\n')
-            f.write(b'LIBPQLIB=libpq.lib\n')
-
-            f.write(b'LIBPQDPATH=$(PGSQLSRC)\\lib\n')
-            f.write(b'LIBPQDDLL=libpq.dll\n')
-            f.write(b'LIBPQDLIB=libpq.lib\n')
-
-        target_dir = os.path.abspath(os.path.join(self.source_subfolder, 'include', 'pqxx'))
-        with tools.chdir(os.path.join(self.source_subfolder, 'config', 'sample-headers', 'compiler', 'VisualStudio2013', 'pqxx')):
-            shutil.copy('config-internal-compiler.h', target_dir)
-            shutil.copy('config-public-compiler.h', target_dir)
-
-        vcvars = tools.vcvars_command(self.settings)
-        self.run(vcvars)
-        env = VisualStudioBuildEnvironment(self)
-        with tools.environment_append(env.vars):
-            with tools.chdir(self.source_subfolder):
-                target = "DLL" if self.options.shared else "STATIC"
-                target += str(self.settings.build_type).upper()
-                command = 'nmake /f win32/vc-libpqxx.mak %s' % target
-                self.output.info(command)
-                self.run(command)
