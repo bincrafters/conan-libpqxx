@@ -22,8 +22,13 @@ class LibpqxxRecipe(ConanFile):
     autotools = None
 
     def config_options(self):
-        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+        if self.settings.os == "Windows":
             self.options.remove("fPIC")
+
+    def configure(self):
+        if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+            if "MT" in self.settings.compiler.runtime:
+                raise Exception("libpqxx does not support MT")
 
     def source(self):
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))
@@ -79,16 +84,15 @@ class LibpqxxRecipe(ConanFile):
 
     def package(self):
         self.copy(pattern="COPYING", dst="licenses", src=self.source_subfolder)
-        if self.settings.os == "Linux":
+        if self.settings.os == "Linux" or self.settings.os == "Macos":
             autotools = self.configure_autotools()
             with tools.chdir(self.source_subfolder):
                 autotools.install()
-        elif self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
+        elif self.settings.os == "Windows":
             self.copy("*", dst="include", src=os.path.join(self.source_subfolder, "include"))
             self.copy("*.h", dst="include", src=os.path.join(self.source_subfolder, "include"))
             self.copy("*.lib", dst="lib", src=os.path.join(self.source_subfolder, "lib"))
             self.copy("*.dll", dst="bin", src=os.path.join(self.source_subfolder, "lib"))
 
     def package_info(self):
-        if self.settings.os == "Linux":
-            self.cpp_info.libs = tools.collect_libs(self)
+        self.cpp_info.libs = tools.collect_libs(self)
