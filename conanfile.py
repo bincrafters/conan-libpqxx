@@ -53,7 +53,6 @@ class LibpqxxRecipe(ConanFile):
         with tools.chdir(os.path.join(self.source_subfolder, 'config', 'sample-headers', 'compiler', 'VisualStudio2013', 'pqxx')):
             shutil.copy('config-internal-compiler.h', target_dir)
             shutil.copy('config-public-compiler.h', target_dir)
-            shutil.copy(os.path.join(self.deps_cpp_info["libpq"].bin_paths[0], "libpq.dll"), os.path.join(self.deps_cpp_info["libpq"].lib_paths[0]))
 
         vcvars = tools.vcvars_command(self.settings)
         self.run(vcvars)
