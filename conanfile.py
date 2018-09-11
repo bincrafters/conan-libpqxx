@@ -24,7 +24,6 @@ class LibpqxxRecipe(ConanFile):
     def config_options(self):
         if self.settings.os == "Windows" and self.settings.compiler == "Visual Studio":
             self.options.remove("fPIC")
-            self.options["libpq"].shared = True
 
     def source(self):
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))
