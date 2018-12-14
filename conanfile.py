@@ -18,9 +18,9 @@ class LibpqxxRecipe(ConanFile):
     exports = "LICENSE.md"
     exports_sources = "CMakeLists.txt"
     options = {"shared": [True, False], "fPIC": [True, False]}
-    default_options = "shared=False", "fPIC=True"
+    default_options = {"shared": False, "fPIC": True}
     requires = "libpq/9.6.9@bincrafters/stable"
-    source_subfolder = "source_subfolder"
+    _source_subfolder = "source_subfolder"
 
     def config_options(self):
         if self.settings.os == "Windows":
@@ -29,23 +29,25 @@ class LibpqxxRecipe(ConanFile):
     def source(self):
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))
         extracted_dir = self.name + "-" + self.version
-        os.rename(extracted_dir, self.source_subfolder)
+        os.rename(extracted_dir, self._source_subfolder)
 
-    def configure_cmake(self):
+    def _configure_cmake(self):
         cmake = CMake(self)
         cmake.configure()
         return cmake
 
     def build(self):
-        cmake = self.configure_cmake()
+        cmake = self._configure_cmake()
         cmake.build()
 
     def package(self):
-        self.copy("COPYING", dst="licenses", src=self.source_subfolder)
-        cmake = self.configure_cmake()
+        self.copy("COPYING", dst="licenses", src=self._source_subfolder)
+        cmake = self._configure_cmake()
         cmake.install()
 
     def package_info(self):
         self.cpp_info.libs = tools.collect_libs(self)
         if self.settings.os == "Windows":
             self.cpp_info.libs.append("Ws2_32")
+        elif self.settings.os == "Linux":
+            self.cpp_info.libs.append("pthread")

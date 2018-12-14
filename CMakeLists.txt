@@ -44,5 +44,16 @@ install(TARGETS ${PROJECT_NAME}
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib)
 
-install(DIRECTORY "${CMAKE_SOURCE_DIR}/source_subfolder/include" DESTINATION "${CMAKE_INSTALL_PREFIX}")
-install(DIRECTORY "${CMAKE_BINARY_DIR}/include" DESTINATION "${CMAKE_INSTALL_PREFIX}")
+install(DIRECTORY "${CMAKE_SOURCE_DIR}/source_subfolder/include"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}"
+        PATTERN "*.md" EXCLUDE
+        PATTERN "*.in" EXCLUDE
+        PATTERN "*.am" EXCLUDE
+        PATTERN "*.template" EXCLUDE)
+
+install(DIRECTORY "${CMAKE_BINARY_DIR}/include"
+        DESTINATION "${CMAKE_INSTALL_PREFIX}"
+        PATTERN "*.md" EXCLUDE
+        PATTERN "*.in" EXCLUDE
+        PATTERN "*.am" EXCLUDE
+        PATTERN "*.template" EXCLUDE)
