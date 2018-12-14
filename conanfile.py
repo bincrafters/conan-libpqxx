@@ -1,113 +1,51 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 import os
-import shutil
-from conans import ConanFile, AutoToolsBuildEnvironment, tools, VisualStudioBuildEnvironment
-from conans.tools import os_info, SystemPackageTool, download, untargz
+from conans import ConanFile, tools, CMake
 
 
-class ConanRecipe(ConanFile):
+class LibpqxxRecipe(ConanFile):
     name = "libpqxx"
-    version = "5.0.1"
+    version = "6.2.4"
     settings = "os", "compiler", "build_type", "arch"
-    description = "Conan package for the libpqxx library"
-    url = "https://github.com/jgsogo/conan-libpqxx"
-    license = "https://github.com/jtv/libpqxx/blob/master/COPYING"
+    description = "The official C++ client API for PostgreSQL"
+    url = "https://github.com/bincrafters/conan-libpqxx"
+    homepage = "https://github.com/jtv/libpqxx"
+    author = "Bincrafters <bincrafters@gmail.com>"
+    license = "BSD-3"
+    generators = "cmake"
+    exports = "LICENSE.md"
+    exports_sources = "CMakeLists.txt"
+    options = {"shared": [True, False], "fPIC": [True, False]}
+    default_options = "shared=False", "fPIC=True"
+    requires = "libpq/9.6.9@bincrafters/stable"
+    source_subfolder = "source_subfolder"
 
-    options = {"disable_documentation": [True, False],
-               "shared": [True, False], }
-    default_options = "disable_documentation=True", "shared=False"
-
-    @property
-    def pq_source_dir(self):
-        return os.path.abspath("libpqxx-%s" % self.version)
-
-    def requirements(self):
-        self.requires.add("postgresql/v9.6.5@jgsogo/stable")
-
-    def system_requirements(self):
-        if os_info.is_linux:
-            if os_info.with_apt:
-                installer = SystemPackageTool()
-                if not self.options.disable_documentation:
-                    installer.install("doxygen")
+    def config_options(self):
+        if self.settings.os == "Windows":
+            self.options.remove("fPIC")
 
     def source(self):
-        if self.version == 'master':
-            raise NotImplementedError("Compilation of master branch not implemented")
-        else:
-            url = "https://github.com/jtv/libpqxx/archive/{}.tar.gz".format(self.version)
-            zip_name = 'libpqxx.tar.gz'
-            download(url, zip_name)
-            untargz(zip_name)
-            os.unlink(zip_name)
+        tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))
+        extracted_dir = self.name + "-" + self.version
+        os.rename(extracted_dir, self.source_subfolder)
+
+    def configure_cmake(self):
+        cmake = CMake(self)
+        cmake.configure()
+        return cmake
 
     def build(self):
-        if self.settings.os == "Linux" or self.settings.os == "Macos":
-            options = "--with-postgres-include={}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "include"))
-            options += " --with-postgres-lib={}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "lib"))
-
-            if self.options.disable_documentation:
-                options += " --disable-documentation"
-
-            env = AutoToolsBuildEnvironment(self)
-            with tools.environment_append(env.vars):
-                with tools.chdir(self.pq_source_dir):
-                    add_path = "export PATH=$PATH:{}".format(os.path.join(self.deps_cpp_info["postgresql"].rootpath, "bin"))
-                    self.output.info(options)
-                    self.run("{} && ./configure {}".format(add_path, options))
-                    self.run("make")
-        else:
-            self.windows_build()
+        cmake = self.configure_cmake()
+        cmake.build()
 
     def package(self):
-        self.copy("pqxx/*", dst="include", src=os.path.join(self.pq_source_dir, "include"), keep_path=True)
-        self.copy(pattern="COPYING", dst="licenses", src=self.pq_source_dir, ignore_case=True, keep_path=False)
-
-        if self.settings.os == "Linux":
-            # if shared:
-            # self.copy(pattern="*.so*", dst="lib", src=os.path.join(self.FOLDER_NAME, "lib", ".libs"))
-            self.copy("*.a", dst="lib", src=os.path.join(self.pq_source_dir, "src", ".libs"))
-        elif self.settings.os == "Windows":
-            self.copy("*.lib", dst="lib", src=os.path.join(self.pq_source_dir, "lib"))
-            self.copy("*.bin", dst="bin", src=os.path.join(self.pq_source_dir, "lib"))
+        self.copy("COPYING", dst="licenses", src=self.source_subfolder)
+        cmake = self.configure_cmake()
+        cmake.install()
 
     def package_info(self):
-        if self.settings.os == "Linux":
-            self.cpp_info.libs = ["pqxx",]
-        elif self.settings.os == "Windows":
-            base_name = "libpqxx"
-            if not self.options.shared:
-                base_name += "_static"
-            self.cpp_info.libs = [base_name, ]
-
-    def windows_build(self):
-        # Follow instructions in https://github.com/jtv/libpqxx/blob/master/win32/INSTALL.txt
-        common_file = os.path.join(self.pq_source_dir, 'win32', 'common')
-        with open(common_file, "w") as f:
-            f.write('PGSQLSRC="{}"\n'.format(self.deps_cpp_info["postgresql"].rootpath))
-            f.write('PGSQLINC=$(PGSQLSRC)\include\n')
-            f.write('LIBPQINC=$(PGSQLSRC)\include\n')
-
-            f.write('LIBPQPATH=$(PGSQLSRC)\lib\n')
-            f.write('LIBPQDLL=libpq.dll\n')
-            f.write('LIBPQLIB=libpq.lib\n')
-
-            f.write('LIBPQDPATH=$(PGSQLSRC)\lib\n')
-            f.write('LIBPQDDLL=libpq.dll\n')
-            f.write('LIBPQDLIB=libpq.lib\n')
-
-        target_dir = os.path.join(self.pq_source_dir, 'include', 'pqxx')
-        with tools.chdir(os.path.join(self.pq_source_dir, 'config', 'sample-headers', 'compiler', 'VisualStudio2013', 'pqxx')):
-            shutil.copy('config-internal-compiler.h', target_dir + "/")
-            shutil.copy('config-public-compiler.h', target_dir + "/")
-
-        vcvars = tools.vcvars_command(self.settings)
-        self.run(vcvars)
-        env = VisualStudioBuildEnvironment(self)
-        with tools.environment_append(env.vars):
-            with tools.chdir(self.pq_source_dir):
-                target = "DLL" if self.options.shared else "STATIC"
-                target += str(self.settings.build_type).upper()
-                command = 'nmake /f win32/vc-libpqxx.mak %s' % target
-                self.output.info(command)
-                self.run(command)
+        self.cpp_info.libs = tools.collect_libs(self)
+        if self.settings.os == "Windows":
+            self.cpp_info.libs.append("Ws2_32")

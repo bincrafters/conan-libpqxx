@@ -1,21 +1,19 @@
-from conans import ConanFile, CMake
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+from conans import ConanFile, CMake, tools
 import os
 
-class TestLibpqxx(ConanFile):
+
+class TestPackageConan(ConanFile):
     settings = "os", "compiler", "build_type", "arch"
     generators = "cmake"
 
     def build(self):
-        cmake = CMake(self.settings)
-        self.run('cmake "%s" %s' % (self.conanfile_directory, cmake.command_line))
-        self.run("cmake --build . %s" % cmake.build_config)
+        cmake = CMake(self)
+        cmake.configure()
+        cmake.build()
 
     def test(self):
-        self.run(os.sep.join(["cd bin && .", "libpqxx_test"]))
-
-    def imports(self):
-        if self.settings.os == "Windows":
-            self.copy(pattern="*.dll", dst="bin", src="bin")
-            self.copy(pattern="*.pdb", dst="bin", src="bin")
-        if self.settings.os == "Macos":
-            self.copy(pattern="*.dylib", dst="bin", src="lib")
+        bin_path = os.path.join("bin", "test_package")
+        self.run(bin_path, run_environment=True)
