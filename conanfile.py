@@ -3,6 +3,8 @@
 
 import os
 from conans import ConanFile, tools, CMake
+from conans.model.version import Version
+from conans.errors import ConanInvalidConfiguration
 
 
 class LibpqxxRecipe(ConanFile):
@@ -25,6 +27,12 @@ class LibpqxxRecipe(ConanFile):
     def config_options(self):
         if self.settings.os == "Windows":
             self.options.remove("fPIC")
+
+    def configure(self):
+        if self.settings.os == "Windows" and \
+           self.settings.compiler == "Visual Studio" and \
+           Version(self.settings.compiler.version.value) < "14":
+            raise ConanInvalidConfiguration("libpqxx could not be build by Visual Studio < 14")
 
     def source(self):
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))
