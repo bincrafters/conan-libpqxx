@@ -29,6 +29,12 @@ class LibpqxxRecipe(ConanFile):
         if self.settings.os == "Windows":
             self.options.remove("fPIC")
 
+    def configure(self):
+        if self.settings.os == "Windows" and \
+           self.settings.compiler == "Visual Studio" and \
+           Version(self.settings.compiler.version.value) < "14":
+            raise ConanInvalidConfiguration("Your MSVC version is too old, libpqxx requires C++14")
+
     def source(self):
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))
         extracted_dir = self.name + "-" + self.version
