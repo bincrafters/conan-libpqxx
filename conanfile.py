@@ -51,7 +51,7 @@ class LibpqxxRecipe(ConanFile):
             ]
             self._autotools = AutoToolsBuildEnvironment(self, win_bash=tools.os_info.is_windows)
             env_vars = self._autotools.vars
-            env_vars["PATH"] = "{}:{}".format(os.getenv("PATH"), os.path.join(self.deps_cpp_info["libpq"].rootpath, "bin"))
+            env_vars["PG_CONFIG"] = os.path.join(self.deps_cpp_info["libpq"].rootpath, "bin", "pg_config")
             self._autotools.configure(args=args, vars=env_vars)
         return self._autotools
 
