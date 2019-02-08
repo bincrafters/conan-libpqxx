@@ -9,13 +9,14 @@ from conans.errors import ConanInvalidConfiguration
 
 class LibpqxxRecipe(ConanFile):
     name = "libpqxx"
-    version = "6.2.4"
+    version = "6.3.1"
     settings = "os", "compiler", "build_type", "arch"
     description = "The official C++ client API for PostgreSQL"
     url = "https://github.com/bincrafters/conan-libpqxx"
     homepage = "https://github.com/jtv/libpqxx"
     author = "Bincrafters <bincrafters@gmail.com>"
-    license = "BSD-3"
+    license = "BSD-3-Clause"
+    topics = ("conan", "libpqxx", "postgres", "postgresql", "data-base")
     generators = "cmake"
     exports = "LICENSE.md"
     exports_sources = "CMakeLists.txt"
@@ -36,7 +37,8 @@ class LibpqxxRecipe(ConanFile):
             raise ConanInvalidConfiguration("Your MSVC version is too old, libpqxx requires C++14")
 
     def source(self):
-        tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version))
+        sha256 = "00975df6d8e5a06060c232c7156ec63a2b0b8cbb097b6ac7833fa9e48f50d0ed"
+        tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version), sha256=sha256)
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
