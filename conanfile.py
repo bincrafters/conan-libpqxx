@@ -42,6 +42,12 @@ class LibpqxxRecipe(ConanFile):
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
+        # Fixes build errors with gcc 4.9: https://github.com/jtv/libpqxx/issues/161
+        tools.replace_in_file(
+            os.path.join(self._source_subfolder, "src", "encodings.cxx"),
+            "auto found_encoding_group{encoding_map.find(encoding_name)};",
+            "const auto found_encoding_group = encoding_map.find(encoding_name);")
+
     def _configure_autotools(self):
         if not self._autotools:
             args = [
