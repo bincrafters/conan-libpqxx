@@ -31,10 +31,18 @@ class LibpqxxRecipe(ConanFile):
             self.options.remove("fPIC")
 
     def configure(self):
+        compiler_version = Version(self.settings.compiler.version.value)
+
         if self.settings.os == "Windows" and \
            self.settings.compiler == "Visual Studio" and \
-           Version(self.settings.compiler.version.value) < "14":
+           compiler_version < "14":
             raise ConanInvalidConfiguration("Your MSVC version is too old, libpqxx requires C++14")
+
+        if self.settings.os == "Macos" and \
+           self.settings.compiler == "apple-clang" and \
+           compiler_version < "8.0":
+            raise ConanInvalidConfiguration(("libpqxx requires thread-local storage features,"
+                                             " could not be built by apple-clang < 8.0"))
 
     def source(self):
         sha256 = "00975df6d8e5a06060c232c7156ec63a2b0b8cbb097b6ac7833fa9e48f50d0ed"
