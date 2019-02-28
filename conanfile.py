@@ -73,6 +73,8 @@ class LibpqxxRecipe(ConanFile):
 
     def _configure_cmake(self):
         cmake = CMake(self)
+        cmake.definitions["SKIP_PQXX_STATIC"] = "ON" if self.options.shared else "OFF"
+        cmake.definitions["SKIP_PQXX_SHARED"] = "OFF" if self.options.shared else "ON"
         cmake.configure()
         return cmake
 
