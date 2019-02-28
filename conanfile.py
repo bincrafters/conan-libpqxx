@@ -93,6 +93,11 @@ class LibpqxxRecipe(ConanFile):
         if self.settings.os == "Windows":
             cmake = self._configure_cmake()
             cmake.install()
+
+            # Fixes install missing header include/pqxx/pqxx: https://github.com/jtv/libpqxx/issues/166
+            self.copy("pqxx", dst="include/pqxx",
+                      src=os.path.join(self._source_subfolder, "include", "pqxx"))
+
         else:
             with tools.chdir(self._source_subfolder):
                 autotools = self._configure_autotools()
