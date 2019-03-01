@@ -24,6 +24,7 @@ class LibpqxxRecipe(ConanFile):
     default_options = {"shared": False, "fPIC": True}
     requires = "libpq/9.6.9@bincrafters/stable"
     _source_subfolder = "source_subfolder"
+    _build_subfolder = "build_subfolder"
     _autotools = None
 
     def config_options(self):
@@ -56,6 +57,11 @@ class LibpqxxRecipe(ConanFile):
             "auto found_encoding_group{encoding_map.find(encoding_name)};",
             "const auto found_encoding_group = encoding_map.find(encoding_name);")
 
+        # Fixes install missing config-compiler-public.h: https://github.com/jtv/libpqxx/pull/169/files
+        tools.replace_in_file(
+            os.path.join(self._source_subfolder, "include", "CMakeLists.txt"),
+            "DIRECTORY pqxx", 'DIRECTORY pqxx "${PROJECT_BINARY_DIR}/include/pqxx"')
+
     def _configure_autotools(self):
         if not self._autotools:
             args = [
@@ -76,7 +82,7 @@ class LibpqxxRecipe(ConanFile):
         cmake.definitions["SKIP_BUILD_TEST"] = "ON"
         cmake.definitions["SKIP_PQXX_STATIC"] = "ON" if self.options.shared else "OFF"
         cmake.definitions["SKIP_PQXX_SHARED"] = "OFF" if self.options.shared else "ON"
-        cmake.configure()
+        cmake.configure(build_folder=self._build_subfolder)
         return cmake
 
     def build(self):
