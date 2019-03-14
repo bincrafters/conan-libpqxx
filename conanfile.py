@@ -9,7 +9,7 @@ from conans.errors import ConanInvalidConfiguration
 
 class LibpqxxRecipe(ConanFile):
     name = "libpqxx"
-    version = "6.3.1"
+    version = "6.3.3"
     settings = "os", "compiler", "build_type", "arch", "cppstd"
     description = "The official C++ client API for PostgreSQL"
     url = "https://github.com/bincrafters/conan-libpqxx"
@@ -46,21 +46,10 @@ class LibpqxxRecipe(ConanFile):
                                              " could not be built by apple-clang < 8.0"))
 
     def source(self):
-        sha256 = "00975df6d8e5a06060c232c7156ec63a2b0b8cbb097b6ac7833fa9e48f50d0ed"
+        sha256 = "73ff3308987f12111efb554acb599b2233ab3d52a69d3674b39acd10830758a4"
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version), sha256=sha256)
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
-
-        # Fixes build errors with gcc 4.9: https://github.com/jtv/libpqxx/issues/161
-        tools.replace_in_file(
-            os.path.join(self._source_subfolder, "src", "encodings.cxx"),
-            "auto found_encoding_group{encoding_map.find(encoding_name)};",
-            "const auto found_encoding_group = encoding_map.find(encoding_name);")
-
-        # Fixes install missing config-compiler-public.h: https://github.com/jtv/libpqxx/pull/169/files
-        tools.replace_in_file(
-            os.path.join(self._source_subfolder, "include", "CMakeLists.txt"),
-            "DIRECTORY pqxx", 'DIRECTORY pqxx "${PROJECT_BINARY_DIR}/include/pqxx"')
 
     def _configure_autotools(self):
         if not self._autotools:
@@ -79,9 +68,9 @@ class LibpqxxRecipe(ConanFile):
 
     def _configure_cmake(self):
         cmake = CMake(self)
-        cmake.definitions["SKIP_BUILD_TEST"] = "ON"
-        cmake.definitions["SKIP_PQXX_STATIC"] = "ON" if self.options.shared else "OFF"
-        cmake.definitions["SKIP_PQXX_SHARED"] = "OFF" if self.options.shared else "ON"
+        cmake.definitions["SKIP_BUILD_TEST"] = True
+        cmake.definitions["SKIP_PQXX_STATIC"] = True if self.options.shared else False
+        cmake.definitions["SKIP_PQXX_SHARED"] = False if self.options.shared else True
         cmake.configure(build_folder=self._build_subfolder)
         return cmake
 
@@ -99,10 +88,6 @@ class LibpqxxRecipe(ConanFile):
         if self.settings.os == "Windows":
             cmake = self._configure_cmake()
             cmake.install()
-
-            # Fixes install missing header include/pqxx/pqxx: https://github.com/jtv/libpqxx/issues/166
-            self.copy("pqxx", dst="include/pqxx",
-                      src=os.path.join(self._source_subfolder, "include", "pqxx"))
 
         else:
             with tools.chdir(self._source_subfolder):
