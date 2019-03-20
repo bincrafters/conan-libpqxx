@@ -9,7 +9,7 @@ from conans.errors import ConanInvalidConfiguration
 
 class LibpqxxRecipe(ConanFile):
     name = "libpqxx"
-    version = "6.3.3"
+    version = "6.4.0"
     settings = "os", "compiler", "build_type", "arch", "cppstd"
     description = "The official C++ client API for PostgreSQL"
     url = "https://github.com/bincrafters/conan-libpqxx"
@@ -46,7 +46,7 @@ class LibpqxxRecipe(ConanFile):
                                              " could not be built by apple-clang < 8.0"))
 
     def source(self):
-        sha256 = "73ff3308987f12111efb554acb599b2233ab3d52a69d3674b39acd10830758a4"
+        sha256 = "adaac327a25704df32fb9762cfd6d8da7d566ea2ef57e9edff539c06e045f01d"
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version), sha256=sha256)
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
