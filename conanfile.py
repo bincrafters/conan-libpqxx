@@ -10,7 +10,7 @@ from conans.errors import ConanInvalidConfiguration
 class LibpqxxRecipe(ConanFile):
     name = "libpqxx"
     version = "6.4.4"
-    settings = "os", "compiler", "build_type", "arch", "cppstd"
+    settings = "os", "compiler", "build_type", "arch"
     description = "The official C++ client API for PostgreSQL"
     url = "https://github.com/bincrafters/conan-libpqxx"
     homepage = "https://github.com/jtv/libpqxx"
