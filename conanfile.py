@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
 import os
 from conans import ConanFile, tools, AutoToolsBuildEnvironment, CMake
 from conans.tools import Version
@@ -14,7 +11,6 @@ class LibpqxxRecipe(ConanFile):
     description = "The official C++ client API for PostgreSQL"
     url = "https://github.com/bincrafters/conan-libpqxx"
     homepage = "https://github.com/jtv/libpqxx"
-    author = "Bincrafters <bincrafters@gmail.com>"
     license = "BSD-3-Clause"
     topics = ("conan", "libpqxx", "postgres", "postgresql", "data-base")
     generators = "cmake"
