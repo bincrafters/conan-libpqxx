@@ -82,6 +82,37 @@ class LibpqxxRecipe(ConanFile):
         )""",
             """        set_property(TARGET ${tgt} PROPERTY OUTPUT_NAME)""")
 
+        # Fix Visual Studio 2017 wrong compile error "C2397 narrowing conversion":
+        tools.replace_in_file(
+            os.path.join(self._source_subfolder, "src", "connection.cxx"),
+            """void pqxx::connection::cancel_query()
+{
+  using pointer = std::unique_ptr<PGcancel, std::function<void(PGcancel *)>>;
+  constexpr int buf_size{500};
+  std::array<char, buf_size> errbuf;
+  pointer cancel{PQgetCancel(m_conn), PQfreeCancel};
+  if (cancel == nullptr)
+    throw std::bad_alloc{};
+
+  auto const c{PQcancel(cancel.get(), errbuf.data(), buf_size)};
+  if (c == 0)
+    throw pqxx::sql_error{std::string{errbuf.data(), buf_size}};
+}""",
+            """void pqxx::connection::cancel_query()
+{
+  using pointer = std::unique_ptr<PGcancel, std::function<void(PGcancel *)>>;
+  constexpr int buf_size{500};
+  std::array<char, buf_size> errbuf;
+  pointer cancel{PQgetCancel(m_conn), PQfreeCancel};
+  if (cancel == nullptr)
+    throw std::bad_alloc{};
+
+  auto const c{PQcancel(cancel.get(), errbuf.data(), buf_size)};
+  if (c == 0)
+    throw pqxx::sql_error{std::string{
+        errbuf.data(), static_cast<std::string::size_type>(buf_size)}};
+}""")
+
     def _configure_autotools(self):
         if not self._autotools:
             args = [
