@@ -6,7 +6,7 @@ from conans.errors import ConanInvalidConfiguration
 
 class LibpqxxRecipe(ConanFile):
     name = "libpqxx"
-    version = "6.4.5"
+    version = "7.0.0"
     settings = "os", "compiler", "build_type", "arch"
     description = "The official C++ client API for PostgreSQL"
     url = "https://github.com/bincrafters/conan-libpqxx"
@@ -19,30 +19,49 @@ class LibpqxxRecipe(ConanFile):
     options = {"shared": [True, False], "fPIC": [True, False]}
     default_options = {"shared": False, "fPIC": True}
     requires = "libpq/9.6.9@bincrafters/stable"
-    _source_subfolder = "source_subfolder"
-    _build_subfolder = "build_subfolder"
     _autotools = None
+
+    @property
+    def _source_subfolder(self):
+        return "source_subfolder"
+
+    @property
+    def _build_subfolder(self):
+        return "build_subfolder"
 
     def config_options(self):
         if self.settings.os == "Windows":
             self.options.remove("fPIC")
 
     def configure(self):
+        compiler = str(self.settings.compiler)
         compiler_version = Version(self.settings.compiler.version.value)
 
-        if self.settings.os == "Windows" and \
-           self.settings.compiler == "Visual Studio" and \
-           compiler_version < "14":
-            raise ConanInvalidConfiguration("Your MSVC version is too old, libpqxx requires C++14")
+        minimal_version = {
+            "Visual Studio": "15",
+            "gcc": "7",
+            "clang": "5",
+            "apple-clang": "9"
+        }
 
-        if self.settings.os == "Macos" and \
-           self.settings.compiler == "apple-clang" and \
-           compiler_version < "8.0":
-            raise ConanInvalidConfiguration(("libpqxx requires thread-local storage features,"
-                                             " could not be built by apple-clang < 8.0"))
+        if compiler in minimal_version and \
+           compiler_version < minimal_version[compiler]:
+            raise ConanInvalidConfiguration("%s requires a compiler that supports"
+                                            " at least C++17. %s %s is not"
+                                            " supported." % (self.name, compiler, compiler_version))
+        minimal_cpp_standard = "17"
+        supported_cppstd = ["17", "20"]
+
+        if not self.settings.compiler.cppstd:
+            self.output.info("Settings c++ standard to {}".format(minimal_cpp_standard))
+            self.settings.compiler.cppstd = minimal_cpp_standard
+
+        if not self.settings.compiler.cppstd in supported_cppstd:
+            raise ConanInvalidConfiguration(
+                "%s requires a compiler that supports at least C++%s" % (self.name, minimal_cpp_standard))
 
     def source(self):
-        sha256 = "86921fdb0fe54495a79d5af2c96f2c771098c31e9b352d0834230fd2799ad362"
+        sha256 = "7527bfde17a7123776fa0891f1b83273b32e1bc78dad7af1e893bd2b980ef882"
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version), sha256=sha256)
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
@@ -64,9 +83,8 @@ class LibpqxxRecipe(ConanFile):
 
     def _configure_cmake(self):
         cmake = CMake(self)
-        cmake.definitions["SKIP_BUILD_TEST"] = True
-        cmake.definitions["SKIP_PQXX_STATIC"] = True if self.options.shared else False
-        cmake.definitions["SKIP_PQXX_SHARED"] = False if self.options.shared else True
+        cmake.definitions["BUILD_DOC"] = False
+        cmake.definitions["BUILD_TEST"] = False
         cmake.configure(build_folder=self._build_subfolder)
         return cmake
 
