@@ -66,6 +66,22 @@ class LibpqxxRecipe(ConanFile):
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
 
+        # Fix create symbolic link: https://github.com/jtv/libpqxx/issues/265
+        # `cmake -E create_symlink` is not working if Windows 10 developer mode
+        # is not enabled.
+        # Remove `cmake -E create_symlink` command and reset install name of pqxx.
+        tools.replace_in_file(
+            os.path.join(self._source_subfolder, "src", "CMakeLists.txt"),
+            """        add_custom_target(library_symlink ALL
+        	${CMAKE_COMMAND} -E create_symlink
+        		${library_prefix}${output_name}${library_suffix}
+        		${library_prefix}${name}${library_suffix}
+        )
+        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${library_prefix}${name}${library_suffix}
+        	DESTINATION ${CMAKE_INSTALL_LIBDIR}
+        )""",
+            """        set_property(TARGET ${tgt} PROPERTY OUTPUT_NAME)""")
+
     def _configure_autotools(self):
         if not self._autotools:
             args = [
