@@ -160,9 +160,10 @@ class LibpqxxRecipe(ConanFile):
 
     def package_info(self):
         pqxx_with_suffix = "pqxx-%s.%s" % tuple(self.version.split(".")[0:2])
-        self.cpp_info.libs = ["pqxx" if self._using_cmake or not self.options.shared else pqxx_with_suffix]
+        self.cpp_info.libs.append(
+            "pqxx" if self._using_cmake or not self.options.shared else pqxx_with_suffix)
 
         if self.settings.os == "Windows":
-            self.cpp_info.libs.append("Ws2_32")
+            self.cpp_info.libs.extend(["wsock32 ", "Ws2_32"])
         elif self.settings.os == "Linux":
             self.cpp_info.libs.append("pthread")
