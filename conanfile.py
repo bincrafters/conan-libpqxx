@@ -29,6 +29,10 @@ class LibpqxxRecipe(ConanFile):
     def _build_subfolder(self):
         return "build_subfolder"
 
+    @property
+    def _using_cmake(self):
+        return self.settings.os == "Windows"
+
     def config_options(self):
         if self.settings.os == "Windows":
             self.options.remove("fPIC")
@@ -135,7 +139,7 @@ class LibpqxxRecipe(ConanFile):
         return cmake
 
     def build(self):
-        if self.settings.os == "Windows":
+        if self._using_cmake:
             cmake = self._configure_cmake()
             cmake.build()
         else:
@@ -145,7 +149,7 @@ class LibpqxxRecipe(ConanFile):
 
     def package(self):
         self.copy("COPYING", dst="licenses", src=self._source_subfolder)
-        if self.settings.os == "Windows":
+        if self._using_cmake:
             cmake = self._configure_cmake()
             cmake.install()
 
@@ -155,7 +159,9 @@ class LibpqxxRecipe(ConanFile):
                 autotools.install()
 
     def package_info(self):
-        self.cpp_info.libs = tools.collect_libs(self)
+        pqxx_with_suffix = "pqxx-%s.%s" % tuple(self.version.split(".")[0:2])
+        self.cpp_info.libs = ["pqxx" if self._using_cmake or not self.options.shared else pqxx_with_suffix]
+
         if self.settings.os == "Windows":
             self.cpp_info.libs.append("Ws2_32")
         elif self.settings.os == "Linux":
