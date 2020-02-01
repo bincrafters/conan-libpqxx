@@ -38,6 +38,10 @@ class LibpqxxRecipe(ConanFile):
             self.options.remove("fPIC")
 
     def configure(self):
+        if self.options.shared and self.settings.os == "Windows":
+            self.output.info("Override libpq:shared to True.")
+            self.options["libpq"].shared = True
+
         compiler = str(self.settings.compiler)
         compiler_version = Version(self.settings.compiler.version.value)
 
