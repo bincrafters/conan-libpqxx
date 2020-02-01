@@ -15,21 +15,21 @@ matrix:
       - <<: *linux
         env: CONAN_GCC_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/gcc8
       - <<: *linux
-        env: CONAN_GCC_VERSIONS=9 CONAN_DOCKER_IMAGE=conanio/gcc9
+        env: CONAN_GCC_VERSIONS=9 CONAN_DOCKER_IMAGE=conanio/gcc9 CONAN_BUILD_POLICY=outdated
       - <<: *linux
         env: CONAN_CLANG_VERSIONS=6.0 CONAN_DOCKER_IMAGE=conanio/clang60
       - <<: *linux
         env: CONAN_CLANG_VERSIONS=7.0 CONAN_DOCKER_IMAGE=conanio/clang7
       - <<: *linux
-        env: CONAN_CLANG_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/clang8
+        env: CONAN_CLANG_VERSIONS=8 CONAN_DOCKER_IMAGE=conanio/clang8 CONAN_BUILD_POLICY=outdated
       - <<: *linux
-        env: CONAN_CLANG_VERSIONS=9 CONAN_DOCKER_IMAGE=conanio/clang9
+        env: CONAN_CLANG_VERSIONS=9 CONAN_DOCKER_IMAGE=conanio/clang9 CONAN_BUILD_POLICY=outdated
       - <<: *osx
         osx_image: xcode10.3
         env: CONAN_APPLE_CLANG_VERSIONS=10.0
       - <<: *osx
         osx_image: xcode11.3
-        env: CONAN_APPLE_CLANG_VERSIONS=11.0
+        env: CONAN_APPLE_CLANG_VERSIONS=11.0 CONAN_BUILD_POLICY=outdated
 
 install:
   - chmod +x .ci/install.sh
