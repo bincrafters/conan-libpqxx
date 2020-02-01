@@ -80,15 +80,18 @@ class LibpqxxRecipe(ConanFile):
         # Remove `cmake -E create_symlink` command and reset install name of pqxx.
         tools.replace_in_file(
             os.path.join(self._source_subfolder, "src", "CMakeLists.txt"),
-            """        add_custom_target(library_symlink ALL
-        	${CMAKE_COMMAND} -E create_symlink
-        		${library_prefix}${output_name}${library_suffix}
-        		${library_prefix}${name}${library_suffix}
-        )
-        install(FILES ${CMAKE_CURRENT_BINARY_DIR}/${library_prefix}${name}${library_suffix}
-        	DESTINATION ${CMAKE_INSTALL_LIBDIR}
-        )""",
-            """        set_property(TARGET ${tgt} PROPERTY OUTPUT_NAME)""")
+            "    if(NOT name STREQUAL output_name)",
+            "    if(NOT name STREQUAL output_name AND NOT CMAKE_HOST_WIN32)")
+        tools.replace_in_file(
+            os.path.join(self._source_subfolder, "src", "CMakeLists.txt"),
+            """set_target_properties(
+	pqxx PROPERTIES
+	OUTPUT_NAME pqxx-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
+)""",
+            """set_target_properties(
+    pqxx PROPERTIES
+    OUTPUT_NAME $<IF:$<PLATFORM_ID:Windows>,pqxx,pqxx-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}>
+)""")
 
         # Fix Visual Studio 2017 wrong compile error "C2397 narrowing conversion":
         tools.replace_in_file(
