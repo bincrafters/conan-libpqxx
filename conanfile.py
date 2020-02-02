@@ -6,7 +6,7 @@ from conans.errors import ConanInvalidConfiguration
 
 class LibpqxxRecipe(ConanFile):
     name = "libpqxx"
-    version = "7.0.0"
+    version = "7.0.1"
     settings = "os", "compiler", "build_type", "arch"
     description = "The official C++ client API for PostgreSQL"
     url = "https://github.com/bincrafters/conan-libpqxx"
@@ -69,59 +69,10 @@ class LibpqxxRecipe(ConanFile):
                 "%s requires a compiler that supports at least C++%s" % (self.name, minimal_cpp_standard))
 
     def source(self):
-        sha256 = "7527bfde17a7123776fa0891f1b83273b32e1bc78dad7af1e893bd2b980ef882"
+        sha256 = "8c607ea4142223823ec400a3ff8f9561e8674e5888243cb7c6a610bf548ae0f0"
         tools.get("{0}/archive/{1}.tar.gz".format(self.homepage, self.version), sha256=sha256)
         extracted_dir = self.name + "-" + self.version
         os.rename(extracted_dir, self._source_subfolder)
-
-        # Fix create symbolic link: https://github.com/jtv/libpqxx/issues/265
-        # `cmake -E create_symlink` is not working if Windows 10 developer mode
-        # is not enabled.
-        # Remove `cmake -E create_symlink` command and reset install name of pqxx.
-        tools.replace_in_file(
-            os.path.join(self._source_subfolder, "src", "CMakeLists.txt"),
-            "    if(NOT name STREQUAL output_name)",
-            "    if(NOT name STREQUAL output_name AND NOT CMAKE_HOST_WIN32)")
-        tools.replace_in_file(
-            os.path.join(self._source_subfolder, "src", "CMakeLists.txt"),
-            """set_target_properties(
-	pqxx PROPERTIES
-	OUTPUT_NAME pqxx-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}
-)""",
-            """set_target_properties(
-    pqxx PROPERTIES
-    OUTPUT_NAME $<IF:$<PLATFORM_ID:Windows>,pqxx,pqxx-${PROJECT_VERSION_MAJOR}.${PROJECT_VERSION_MINOR}>
-)""")
-
-        # Fix Visual Studio 2017 wrong compile error "C2397 narrowing conversion":
-        tools.replace_in_file(
-            os.path.join(self._source_subfolder, "src", "connection.cxx"),
-            """void pqxx::connection::cancel_query()
-{
-  using pointer = std::unique_ptr<PGcancel, std::function<void(PGcancel *)>>;
-  constexpr int buf_size{500};
-  std::array<char, buf_size> errbuf;
-  pointer cancel{PQgetCancel(m_conn), PQfreeCancel};
-  if (cancel == nullptr)
-    throw std::bad_alloc{};
-
-  auto const c{PQcancel(cancel.get(), errbuf.data(), buf_size)};
-  if (c == 0)
-    throw pqxx::sql_error{std::string{errbuf.data(), buf_size}};
-}""",
-            """void pqxx::connection::cancel_query()
-{
-  using pointer = std::unique_ptr<PGcancel, std::function<void(PGcancel *)>>;
-  constexpr int buf_size{500};
-  std::array<char, buf_size> errbuf;
-  pointer cancel{PQgetCancel(m_conn), PQfreeCancel};
-  if (cancel == nullptr)
-    throw std::bad_alloc{};
-
-  auto const c{PQcancel(cancel.get(), errbuf.data(), buf_size)};
-  if (c == 0)
-    throw pqxx::sql_error{std::string{errbuf.data(), errbuf.size()}};
-}""")
 
     def _configure_autotools(self):
         if not self._autotools:
