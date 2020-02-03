@@ -38,10 +38,6 @@ class LibpqxxRecipe(ConanFile):
             self.options.remove("fPIC")
 
     def configure(self):
-        if self.options.shared and self.settings.os == "Windows":
-            self.output.info("Override libpq:shared to True.")
-            self.options["libpq"].shared = True
-
         compiler = str(self.settings.compiler)
         compiler_version = Version(self.settings.compiler.version.value)
 
@@ -67,6 +63,12 @@ class LibpqxxRecipe(ConanFile):
         if not self.settings.compiler.cppstd in supported_cppstd:
             raise ConanInvalidConfiguration(
                 "%s requires a compiler that supports at least C++%s" % (self.name, minimal_cpp_standard))
+
+        if self.options.shared and \
+           self.settings.os == "Windows" and \
+           compiler == "Visual Studio":
+            self.output.info("Override libpq:shared to True.")
+            self.options["libpq"].shared = True
 
     def source(self):
         sha256 = "8c607ea4142223823ec400a3ff8f9561e8674e5888243cb7c6a610bf548ae0f0"
